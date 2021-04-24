@@ -39,24 +39,8 @@ public class EmployeeSQLProcessor {
         return connect;
     }
 
-    public  Connector(){
-        JFrame frame = new JFrame();
-        JTabbedPane tabbedPane = new JTabbedPane();
-        JButton button = new JButton("Click me");
-        JLabel label = new JLabel("Number of clicks");
-        JPanel panel = new JPanel();
-        JPanel addEmployee = new JPanel();
+    public  EmployeeSQLProcessor(){
 
-        panel.setBorder(BorderFactory.createEmptyBorder(30,30,10,30));
-        panel.setLayout(new GridLayout(0,1));
-        panel.add(button);
-        panel.add(label);
-
-        frame.add(panel,BorderLayout.CENTER);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setTitle("Management Software");
-        frame.pack();
-        frame.setVisible(true);
     }
 
     public void addEmployee(Employee emp)

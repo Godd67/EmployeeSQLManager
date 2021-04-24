@@ -27,9 +27,21 @@ public class mainTest extends JFrame{
     private JTextField textField1;
     private JComboBox cbSex;
     private JTextArea taLog;
-    private JLabel lbRmEmpSSN;
-    private JTextField tfRmEmpSSN;
     private JButton btnRemove;
+    private JButton btnUpdateEmployee;
+    private JButton btnRemoveEmployee;
+    private JLabel btnDepESSN;
+    private JButton btnESSN;
+    private JList lDep;
+    private JTextField tfESSN;
+    private JLabel lbDepName;
+    private JLabel lbDepSex;
+    private JTextField tfDepName;
+    private JTextField textField2;
+    private JTextField textField3;
+    private JTextField textField4;
+    private JButton btnSaveDep;
+    private JButton newDependentButton;
 
     public mainTest() {
         add(panelMain);
@@ -44,23 +56,42 @@ public class mainTest extends JFrame{
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(panelMain, "Add Employee clicked");
+                //JOptionPane.showMessageDialog(panelMain, "Add Employee clicked");
                 taLog.append("Add Employee clicked\n");
             }
         });
         btnViewEmployee.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
+                //JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
                 taLog.append("View Employee clicked\n");
             }
         });
         btnRemove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(panelMain, "Remove Employee clicked");
+                //JOptionPane.showMessageDialog(panelMain, "Remove Employee clicked");
                 taLog.append("Remove Employee clicked\n");
 
+            }
+        });
+        btnESSN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
+                taLog.append("View Dependent clicked\n");
+            }
+        });
+        btnSaveDep.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                taLog.append("Save Dependent clicked\n");
+            }
+        });
+        newDependentButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                taLog.append("New Dependent clicked\n");
             }
         });
     }
