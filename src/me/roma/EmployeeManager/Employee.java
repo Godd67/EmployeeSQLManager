@@ -6,6 +6,7 @@ public class Employee {
     public String Fname, Minit, Lname, Address, Sex, Bdate;
     public int Ssn, Salary, Super_ssn, Dno;
     public List<Dependent> Dependents;
+    public Department Department;
     public Employee(String Fname, String Minit,String Lname,String Address,String Sex,String Bdate,int Ssn,int Salary,int Super_ssn,int Dno)
     {
         this.Fname = Fname;
