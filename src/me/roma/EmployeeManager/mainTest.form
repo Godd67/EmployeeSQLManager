@@ -202,7 +202,7 @@
           <grid id="95aca" layout-manager="GridLayoutManager" row-count="6" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <tabbedpane title="Add Dependent"/>
+              <tabbedpane title="Dependents"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -319,16 +319,15 @@
                   <text value="New Dependent"/>
                 </properties>
               </component>
+              <component id="7dc59" class="javax.swing.JButton" binding="btnDepRemove">
+                <constraints>
+                  <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Remove Dependent"/>
+                </properties>
+              </component>
             </children>
-          </grid>
-          <grid id="d71be" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
-            <constraints>
-              <tabbedpane title="View/Edit Dependent"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children/>
           </grid>
         </children>
       </tabbedpane>

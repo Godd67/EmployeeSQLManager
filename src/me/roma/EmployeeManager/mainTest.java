@@ -42,6 +42,7 @@ public class mainTest extends JFrame{
     private JTextField textField4;
     private JButton btnSaveDep;
     private JButton newDependentButton;
+    private JButton btnDepRemove;
 
     public mainTest() {
         add(panelMain);
@@ -67,14 +68,7 @@ public class mainTest extends JFrame{
                 taLog.append("View Employee clicked\n");
             }
         });
-        btnRemove.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //JOptionPane.showMessageDialog(panelMain, "Remove Employee clicked");
-                taLog.append("Remove Employee clicked\n");
 
-            }
-        });
         btnESSN.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -92,6 +86,12 @@ public class mainTest extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("New Dependent clicked\n");
+            }
+        });
+        btnDepRemove.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                taLog.append("Remove Dependent clicked\n");
             }
         });
     }
