@@ -61,7 +61,7 @@ public class mainTest extends JFrame{
     public EmployeeSQLProcessor processor;
     private boolean newEmployee;
     private boolean newDependent;
-    private DefaultListModel modelAddList = new DefaultListModel();
+    private DefaultListModel<Dependent> modelAddList = new DefaultListModel();
 
     public mainTest(EmployeeSQLProcessor proc) {
         add(panelMain);
@@ -137,6 +137,7 @@ public class mainTest extends JFrame{
                     }
                     newEmployee=false;
                     cbEdit.setEnabled(true);
+                    cbDepEdit.setEnabled(true);
                     ArrayList<Department> departments=proc.GetDepartments();
                     cbDepartment.removeAllItems();
                     for (Department dep: departments) {
@@ -234,13 +235,16 @@ public class mainTest extends JFrame{
                     {
                         Dependent dep = new Dependent(Integer.parseInt(essn),name,sex,Bdate,relationship);
                         proc.addDependent(dep);
+                        //modelAddList.remove(modelAddList.f"New dependent");
                         modelAddList.addElement(dep);
                     }
 
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
+                    taLog.append(throwables.getMessage());
                 } catch (ClassNotFoundException classNotFoundException) {
                     classNotFoundException.printStackTrace();
+                    taLog.append(classNotFoundException.getMessage());
                 }
             }
         });
@@ -248,10 +252,13 @@ public class mainTest extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("New Dependent clicked\n");
-                modelAddList.addElement("New Dependent");
-                cbDepEdit.setSelected(true);
+                Dependent newDep=new Dependent();
+                newDep.Name="New Dependent";
+                modelAddList.addElement(newDep);
+
                 newDependent=true;
-                tfDepName.setText("New Dependent");
+                tfDepName.setText(newDep.Name);
+                cbDepEdit.setSelected(true);
             }
         });
         btnDepRemove.addActionListener(new ActionListener() {
@@ -262,6 +269,9 @@ public class mainTest extends JFrame{
                 if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete Dependent "+ tfDepName.getText()+ "?") == 0) {
                     try {
                         proc.DeleteDependent(ssn, tfDepName.getText());
+                        for (int i=0;i<modelAddList.size();i++)
+                        if (((Dependent) modelAddList.get(i)).Name==tfDepName.getText())
+                            modelAddList.remove(i);
                     } catch (Exception ex) {
                         taLog.append("Failed to delete Dependent with SSN= " + ssn + ": " + ex.getMessage() + "\n");
                     }
@@ -394,6 +404,8 @@ public class mainTest extends JFrame{
                     tfDepBday.setEditable(true);
                     tfDepRel.setEditable(true);
                     tfDepSex.setEditable(true);
+                    if (newDependent)
+                        tfDepName.setEditable(true);
                 }
                 else
                 {
@@ -401,6 +413,7 @@ public class mainTest extends JFrame{
                     tfDepBday.setEditable(false);
                     tfDepRel.setEditable(false);
                     tfDepSex.setEditable(false);
+                    tfDepName.setEditable(false);
                 }
 
             }
