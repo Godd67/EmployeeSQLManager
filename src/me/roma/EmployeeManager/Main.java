@@ -7,7 +7,8 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame mainFrame=new mainTest();
+                EmployeeSQLProcessor proc=new EmployeeSQLProcessor();
+                JFrame mainFrame=new mainTest(proc);
                 mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 //mainFrame.pack(); -uncomment it if you like compact window view
                 mainFrame.setVisible(true);

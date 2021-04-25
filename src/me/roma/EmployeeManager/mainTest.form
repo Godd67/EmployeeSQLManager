@@ -107,7 +107,7 @@
                   <text value="Salary"/>
                 </properties>
               </component>
-              <component id="16eee" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+              <component id="16eee" class="javax.swing.JTextField" binding="tfSalary">
                 <constraints>
                   <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="123" height="-1"/>
@@ -128,6 +128,54 @@
                 <properties>
                   <text value="Sex"/>
                 </properties>
+              </component>
+              <component id="ae0d3" class="javax.swing.JLabel" binding="lbBirthday">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Birthday"/>
+                </properties>
+              </component>
+              <component id="ddcf3" class="javax.swing.JTextField" binding="tfBirthday">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="7709" class="javax.swing.JLabel" binding="lbSuperSSN">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Manager's SSN"/>
+                </properties>
+              </component>
+              <component id="bfa99" class="javax.swing.JTextField" binding="tfMgrSSN">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="43613" class="javax.swing.JLabel" binding="lbDep">
+                <constraints>
+                  <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Department"/>
+                </properties>
+              </component>
+              <component id="b35ab" class="javax.swing.JTextField" binding="tfDepartment">
+                <constraints>
+                  <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
               </component>
             </children>
           </grid>
@@ -178,7 +226,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="Here to display Employee Data"/>
+                  <text value=""/>
                 </properties>
               </component>
               <component id="2b085" class="javax.swing.JButton" binding="btnUpdateEmployee">

@@ -5,6 +5,9 @@ import javax.sql.DataSource;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.util.*;
+import java.util.List;
+
 public class EmployeeSQLProcessor {
     private  static Connection connect = null;
     private static Statement statement = null;
@@ -43,8 +46,7 @@ public class EmployeeSQLProcessor {
 
     }
 
-    public void addEmployee(Employee emp)
-    {
+    public void addEmployee(Employee emp) throws SQLException, ClassNotFoundException {
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con=DriverManager.getConnection(
@@ -63,10 +65,64 @@ public class EmployeeSQLProcessor {
                     +Integer.toString(emp.Super_ssn) + ","
                     +Integer.toString(emp.Dno) + ")");
 
-        }catch(Exception e){ System.out.println(e);}
+        }catch(Exception e){ System.out.println(e); throw e; }
     }
 
+    public Employee GetEmployee(String ssn) throws SQLException, ClassNotFoundException {
+        Employee emp=new Employee();
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet employees=stmt.executeQuery("select * from Employee where ssn="+ssn+" limit 1");
+            if (employees.next()) {
+                emp.Fname=employees.getString("Fname");
+                emp.Minit=employees.getString("Minit");
+                emp.Lname=employees.getString("Lname");
+                emp.Ssn=Integer.parseInt(ssn);
+                emp.Bdate=employees.getDate("Bdate").toString();
+                emp.Address=employees.getString("Address");
+                emp.Sex=employees.getString("Sex");
+                emp.Salary=employees.getInt("Salary");
+                emp.Super_ssn=employees.getInt("Super_ssn");
+                emp.Dno=employees.getInt("Dno");
+                ResultSet dep=stmt.executeQuery("select * from Department where Mgr_ssn="+Integer.toString(emp.Dno)+" limit 1");
+                if (dep.next())
+                {
+                    emp.Department=new Department();
+                    emp.Department.Name=dep.getString("Name");
+                    emp.Department.Mgr_ssn=dep.getInt(3);
+                    emp.Department.Mgr_start_date=dep.getDate(4).toString();
+                    ResultSet loc=stmt.executeQuery("select * from dept_locations where Dnumber="+Integer.toString(emp.Dno)+" limit 1");
+                    emp.Department.Locations=new ArrayList<String>();
 
+
+                    while (loc.next())
+                    {
+                        emp.Department.Locations.add(loc.getString(2));
+                    }
+                }
+                //emp.Fname=employees.getString(1);
+
+                emp.Dependents=new ArrayList<Dependent>();
+                ResultSet deps = stmt.executeQuery("select * from Dependent where essn='" + ssn + "'");
+                while (deps.next()) {
+                    Dependent depend= new Dependent();
+                    depend.Name=deps.getString(2);
+                    depend.Sex=deps.getString(3);
+                    depend.Bdate=deps.getDate(4).toString();
+                    depend.Relationship=deps.getString(5);
+                    emp.Dependents.add(depend);
+
+                }
+
+            }
+            return emp;
+
+        }catch(Exception e){ System.out.println(e); throw e;}
+    }
 
 
 
