@@ -3,6 +3,10 @@ package me.roma.EmployeeManager;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 
 public class mainTest extends JFrame{
@@ -33,14 +37,15 @@ public class mainTest extends JFrame{
     private JButton btnRemoveEmployee;
     private JLabel btnDepESSN;
     private JButton btnESSN;
+    private DefaultListModel modelAddList = new DefaultListModel();
     private JList lDep;
     private JTextField tfESSN;
     private JLabel lbDepName;
     private JLabel lbDepSex;
     private JTextField tfDepName;
-    private JTextField textField2;
-    private JTextField textField3;
-    private JTextField textField4;
+    private JTextField tfSex;
+    private JTextField tfBday;
+    private JTextField tfRelationship;
     private JButton btnSaveDep;
     private JButton newDependentButton;
     private JButton btnDepRemove;
@@ -62,6 +67,7 @@ public class mainTest extends JFrame{
         cbSex.addItem("Female");
         cbSex.addItem("Other");
         processor=proc;
+        lDep.setModel(modelAddList);
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -126,20 +132,93 @@ public class mainTest extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 //JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
+                modelAddList.removeAllElements();
                 taLog.append("View Dependent clicked\n");
+                String essn=tfESSN.getText();
+                try
+                {
+                    List<Dependent> Dependents=proc.GetDependents(essn);
+                    for(int i = 0; i<Dependents.size(); i++){
+                        modelAddList.addElement(Dependents.get(i));
+                        //taLog.append("Dependents size = " + Dependents.size());
+                        taLog.append("Dependent data for "+Dependents.get(i)+" retrieved from database."+"\n");
+                    }
+                    tfDepName.setText("");
+                    tfSex.setText("");
+                    tfBday.setText("");
+                    tfRelationship.setText("");
+//                    if (! Objects.isNull(emp.Department)) {
+//                        taEmpData.append("Department Name: " + emp.Department.Name + "\n");
+//                        if (! Objects.isNull(emp.Department.Locations) && emp.Department.Locations.size()>0) {
+//
+//                            taEmpData.append("Locations:"+ "\n");
+//                            for (String s:emp.Department.Locations)
+//                                taEmpData.append("\t"+s+ "\n");
+//
+//                        }
+//
+//                    }
 
+
+
+                }
+                catch (Exception ex)
+                {
+                    taLog.append("Getting dependent data for ESSN="+essn+" failed: "+ex.getMessage()+"\n");
+                }
+
+            }
+        });
+        lDep.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent me) {
+                if(lDep.getSelectedValue() instanceof Dependent)
+                {
+                    Dependent dep = (Dependent) lDep.getSelectedValue();
+                    String name = dep.Name;
+                    String Sex = dep.Sex;
+                    String Bdate = dep.Bdate;
+                    String Relationship = dep.Relationship;
+                    tfDepName.setText(name);
+                    tfSex.setText(Sex);
+                    tfBday.setText(Bdate);
+                    tfRelationship.setText(Relationship);
+                }
             }
         });
         btnSaveDep.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //TODO call "Exists" method in proc to see if the table has an
+                //entry with the correct essn and name, if not then call addDependent;
                 taLog.append("Save Dependent clicked\n");
+                String name = tfDepName.getText();
+                String sex = tfSex.getText();
+                String Bdate = tfBday.getText();
+                String relationship = tfRelationship.getText();
+                String essn = tfESSN.getText();
+                try {
+                    if (proc.dependentExists(essn,name))
+                    {
+                        proc.modifyDependent(essn,name,sex,Bdate,relationship);
+                    }
+                    else
+                    {
+                        Dependent dep = new Dependent(Integer.parseInt(essn),name,sex,Bdate,relationship);
+                        proc.addDependent(dep);
+                    }
+
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                } catch (ClassNotFoundException classNotFoundException) {
+                    classNotFoundException.printStackTrace();
+                }
             }
         });
         newDependentButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("New Dependent clicked\n");
+                modelAddList.addElement("New Dependent");
             }
         });
         btnDepRemove.addActionListener(new ActionListener() {
