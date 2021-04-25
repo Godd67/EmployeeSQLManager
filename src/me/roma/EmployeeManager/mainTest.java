@@ -238,7 +238,7 @@ public class mainTest extends JFrame{
                         //modelAddList.remove(modelAddList.f"New dependent");
                         modelAddList.addElement(dep);
                     }
-
+                    cbDepEdit.setSelected(false);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                     taLog.append(throwables.getMessage());
@@ -272,6 +272,7 @@ public class mainTest extends JFrame{
                         for (int i=0;i<modelAddList.size();i++)
                         if (((Dependent) modelAddList.get(i)).Name==tfDepName.getText())
                             modelAddList.remove(i);
+                        cbDepEdit.setSelected(false);
                     } catch (Exception ex) {
                         taLog.append("Failed to delete Dependent with SSN= " + ssn + ": " + ex.getMessage() + "\n");
                     }
@@ -406,6 +407,8 @@ public class mainTest extends JFrame{
                     tfDepSex.setEditable(true);
                     if (newDependent)
                         tfDepName.setEditable(true);
+                    else
+                        proc.LockEmployee(Integer.parseInt(tfVEmpSSN.getText()));
                 }
                 else
                 {
