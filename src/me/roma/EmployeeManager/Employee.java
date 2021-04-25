@@ -14,7 +14,19 @@ public class Employee {
         this.Minit = Minit;
         this.Lname = Lname;
         this.Address = Address;
-        this.Sex = Sex;
+        switch (Sex)
+        {
+            case "Male":
+                this.Sex = "M";
+                break;
+            case "F":
+                this.Sex = "F";
+                break;
+            default:
+                this.Sex = "O";
+                break;
+        }
+
         this.Bdate = Bdate;
         this.Ssn = Ssn;
         this.Salary = Salary;

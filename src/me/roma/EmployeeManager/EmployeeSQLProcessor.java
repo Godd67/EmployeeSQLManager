@@ -12,7 +12,7 @@ public class EmployeeSQLProcessor {
     private  static Connection connect = null;
     private static Statement statement = null;
     private static ResultSet resultSet = null;
-
+    public ArrayList<Department> Departments;
 
     public static DataSource  getSource()
     {
@@ -67,6 +67,89 @@ public class EmployeeSQLProcessor {
 
         }catch(Exception e){ System.out.println(e); throw e; }
     }
+    public void updateEmployee(Employee emp) throws SQLException, ClassNotFoundException {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            String sql="update Employee set Fname = '" +emp.Fname + "'"+
+                    ",Minit='"+emp.Minit + "'"+
+                    ",Lname='"+emp.Lname + "'"+
+                    ",Bdate='"+emp.Bdate + "'"+
+                    ",Address='"+emp.Address + "'"+
+                    ",Sex='"+emp.Sex + "'"+
+                    ",Salary="+Integer.toString(emp.Salary) +
+                    ",Super_ssn="+Integer.toString(emp.Super_ssn) +
+                    ",Dno="+Integer.toString(emp.Dno) +
+                    " where ssn="+emp.Ssn;
+            int rs=stmt.executeUpdate(sql);
+
+        }catch(Exception e){ System.out.println(e); throw e; }
+    }
+    public boolean EmployeeExists(String ssn) throws SQLException, ClassNotFoundException {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet employee=stmt.executeQuery("select ssn from Employee where ssn="+ssn+" limit 1");
+            if (employee.next()) {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+        }catch(Exception e){ System.out.println(e); throw e;}
+    }
+
+    public void DeleteEmployee(String ssn) throws SQLException, ClassNotFoundException {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            stmt.executeUpdate("delete from Employee where ssn="+ssn);
+            stmt.executeUpdate("delete from Dependent where essn="+ssn);
+
+
+
+        }catch(Exception e){ System.out.println(e); throw e;}
+    }
+
+    public ArrayList<Department> GetDepartments() throws SQLException, ClassNotFoundException
+    {
+        if (!Objects.isNull(Departments))
+            return Departments;
+        Departments =new ArrayList<Department>();
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet deps=stmt.executeQuery("select * from Department");
+            while (deps.next()) {
+                Department dep=new Department();
+                dep.Name=deps.getString("Dname");
+                dep.Number=deps.getInt("Dnumber");
+                dep.Mgr_ssn=deps.getInt("Mgr_ssn");
+                dep.Mgr_start_date=deps.getDate("Mgr_start_date").toString();
+                Departments.add(dep);
+
+                }
+
+            return Departments;
+
+        }catch(Exception e){ System.out.println(e); throw e;}
+    }
+
 
     public Employee GetEmployee(String ssn) throws SQLException, ClassNotFoundException {
         Employee emp=new Employee();

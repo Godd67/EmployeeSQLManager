@@ -1,8 +1,12 @@
 package me.roma.EmployeeManager;
 
+import com.mysql.cj.util.StringUtils;
+import com.sun.deploy.security.SelectableSecurityManager;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class mainTest extends JFrame{
@@ -20,7 +24,6 @@ public class mainTest extends JFrame{
     private JLabel lbVEmpSSN;
     private JTextField tfVEmpSSN;
     private JButton btnViewEmployee;
-    private JLabel lbEmployeeData;
     private JTextArea taEmpData;
     private JLabel lbSSN;
     private JTextField tfSSN;
@@ -29,12 +32,9 @@ public class mainTest extends JFrame{
     private JComboBox cbSex;
     private JTextArea taLog;
     private JButton btnRemove;
-    private JButton btnUpdateEmployee;
     private JButton btnRemoveEmployee;
-    private JLabel btnDepESSN;
     private JButton btnESSN;
     private JList lDep;
-    private JTextField tfESSN;
     private JLabel lbDepName;
     private JLabel lbDepSex;
     private JTextField tfDepName;
@@ -50,6 +50,10 @@ public class mainTest extends JFrame{
     private JTextField tfMgrSSN;
     private JLabel lbDep;
     private JTextField tfDepartment;
+    private JTextField tfMI;
+    private JLabel lbMI;
+    private JButton btnSaveEmp;
+    private JComboBox cbDepartment;
     public EmployeeSQLProcessor processor;
 
     public mainTest(EmployeeSQLProcessor proc) {
@@ -67,18 +71,31 @@ public class mainTest extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 //JOptionPane.showMessageDialog(panelMain, "Add Employee clicked");
                 taLog.append("Add Employee clicked\n");
-                try
-                {
-                    Employee emp=new Employee(tfFirstName.getText(),"A",tfLastName.getText(),
-                            tfAddress.getText(),cbSex.getSelectedItem().toString(), tfBirthday.getText(), Integer.parseInt(tfSSN.getText()),
-                            Integer.parseInt(tfSalary.getText()),Integer.parseInt(tfMgrSSN.getText()),Integer.parseInt(tfDepartment.getText()));
-                    proc.addEmployee(emp);
-                    taLog.append("Employee data for "+emp.Fname+" "+emp.Lname+" was added successfully to database."+"\n");
-                }
-                catch (Exception ex)
-                {
-                    taLog.append(ex.getMessage()+"\n");
-                }
+                String ssn = tfVEmpSSN.getText();
+
+                    try {
+                        if (proc.EmployeeExists(ssn)) {
+                            JOptionPane.showMessageDialog(panelMain, "Employee with SSN = " + ssn + " already exists.");
+
+                        }
+                        else
+                        {
+                            tfFirstName.setText("");
+                            tfLastName.setText("");
+                            tfMgrSSN.setText("");
+                            tfMI.setText("");
+                            tfSSN.setText(ssn);
+                            tfBirthday.setText("");
+                            tfAddress.setText("");
+                            cbSex.setSelectedItem("Other");
+                            tfSalary.setText("");
+                            tfDepartment.setText("");
+
+                        }
+                    } catch (Exception ex) {
+                        taLog.append("Failed to validate Employee SSN= " + ssn + ": " + ex.getMessage() + "\n");
+                    }
+
             }
         });
         btnViewEmployee.addActionListener(new ActionListener() {
@@ -90,27 +107,43 @@ public class mainTest extends JFrame{
                 try
                 {
                     Employee emp=proc.GetEmployee(ssn);
-                    taEmpData.append("First Name: "+emp.Fname+"\n");
-                    taEmpData.append("Last Name: "+emp.Lname+"\n");
-                    taEmpData.append("MI: "+emp.Minit+"\n");
-                    taEmpData.append("First Name: "+emp.Fname+"\n");
-                    taEmpData.append("SSN: "+emp.Ssn+"\n");
-                    taEmpData.append("Birthday: "+emp.Bdate+"\n");
-                    taEmpData.append("Address: "+emp.Address+"\n");
-                    taEmpData.append("Sex: "+emp.Sex+"\n");
-                    taEmpData.append("Salary: "+emp.Salary+"\n");
-                    taEmpData.append("Manager's SSN: "+emp.Super_ssn+"\n");
-                    if (! Objects.isNull(emp.Department)) {
-                        taEmpData.append("Department Name: " + emp.Department.Name + "\n");
-                        if (! Objects.isNull(emp.Department.Locations) && emp.Department.Locations.size()>0) {
+                    ArrayList<Department> departments=proc.GetDepartments();
+                    cbDepartment.removeAllItems();
+                    for (Department dep: departments) {
+                        cbDepartment.addItem(dep.Name);
+                        if ( emp.Dno==dep.Number) {
 
-                            taEmpData.append("Locations:"+ "\n");
-                            for (String s:emp.Department.Locations)
-                                taEmpData.append("\t"+s+ "\n");
-
+                            cbDepartment.setSelectedItem(dep.Name);
                         }
 
                     }
+                    tfFirstName.setText(emp.Fname);
+                    tfLastName.setText(emp.Lname);
+                    tfMgrSSN.setText(Integer.toString(emp.Super_ssn));
+                    tfMI.setText(emp.Minit);
+                    tfSSN.setText(Integer.toString(emp.Ssn));
+                    tfBirthday.setText(emp.Bdate);
+                    tfAddress.setText(emp.Address);
+                    switch (emp.Sex)
+                    {
+                        case "M":
+                            cbSex.setSelectedItem("Male");
+                            break;
+                        case "F":
+                            cbSex.setSelectedItem("Female");
+                            break;
+                        default:
+                            cbSex.setSelectedItem("Other");
+                            break;
+                    }
+
+                    tfSalary.setText(Integer.toString(emp.Salary));
+
+                    if (! Objects.isNull(emp.Dependents) && emp.Dependents.size()>0) {
+                    //todo - add dependent data to Dependents tab
+                    }
+
+
 
                     taLog.append("Employee data for "+emp.Fname+" "+emp.Lname+" retrieved from database."+"\n");
 
@@ -122,14 +155,14 @@ public class mainTest extends JFrame{
             }
         });
 
-        btnESSN.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
-                taLog.append("View Dependent clicked\n");
-
-            }
-        });
+//        btnESSN.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //JOptionPane.showMessageDialog(panelMain, "View Employee clicked");
+//                taLog.append("View Dependent clicked\n");
+//
+//            }
+//        });
         btnSaveDep.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -146,6 +179,56 @@ public class mainTest extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("Remove Dependent clicked\n");
+            }
+        });
+        btnRemoveEmployee.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                taLog.append("Remove Employee clicked\n");
+                String ssn = tfVEmpSSN.getText();
+                if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete Employee with SSN = " + ssn + "?") == 0) {
+                    try {
+                        proc.DeleteEmployee(ssn);
+                    } catch (Exception ex) {
+                        taLog.append("Failed to delete Employee with SSN= " + ssn + ": " + ex.getMessage() + "\n");
+                    }
+                }
+
+            }
+        });
+        btnSaveEmp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                taLog.append("Save Employee clicked\n");
+                int ssn=Integer.parseInt(tfSSN.getText());
+                try
+                {
+
+                    if (StringUtils.isNullOrEmpty(tfSSN.getText()))
+                    {
+                        JOptionPane.showMessageDialog(panelMain, "SSN field cannot be empty.");
+                    }
+                    else {
+                        int dno=0;
+                        ArrayList<Department> deps=proc.GetDepartments();
+                        for (Department dep : deps
+                             ) {
+                            if (dep.Name== cbDepartment.getSelectedItem().toString()) {
+                                dno = dep.Number;
+                                break;
+                            }
+                        }
+                        Employee emp = new Employee(tfFirstName.getText(), tfMI.getText(), tfLastName.getText(),
+                                tfAddress.getText(), cbSex.getSelectedItem().toString(), tfBirthday.getText(), ssn,
+                                Integer.parseInt(tfSalary.getText()), Integer.parseInt(tfMgrSSN.getText()), dno);
+                        proc.updateEmployee(emp);
+                        taLog.append("Employee data for SSN = " + emp.Ssn +" was updated successfully in database." + "\n");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    taLog.append(ex.getMessage()+"\n");
+                }
             }
         });
     }
