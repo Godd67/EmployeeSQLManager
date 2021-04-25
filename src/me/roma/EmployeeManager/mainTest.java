@@ -4,8 +4,8 @@ import com.mysql.cj.util.StringUtils;
 import com.sun.deploy.security.SelectableSecurityManager;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -38,9 +38,9 @@ public class mainTest extends JFrame{
     private JLabel lbDepName;
     private JLabel lbDepSex;
     private JTextField tfDepName;
-    private JTextField textField2;
-    private JTextField textField3;
-    private JTextField textField4;
+    private JTextField tfDepSex;
+    private JTextField tfDepBday;
+    private JTextField tfDepRel;
     private JButton btnSaveDep;
     private JButton newDependentButton;
     private JButton btnDepRemove;
@@ -54,7 +54,14 @@ public class mainTest extends JFrame{
     private JLabel lbMI;
     private JButton btnSaveEmp;
     private JComboBox cbDepartment;
+    private JLabel lbMgrName;
+    private JTextField tfMgrName;
+    private JCheckBox cbEdit;
+    private JCheckBox cbDepEdit;
     public EmployeeSQLProcessor processor;
+    private boolean newEmployee;
+    private boolean newDependent;
+    private DefaultListModel modelAddList = new DefaultListModel();
 
     public mainTest(EmployeeSQLProcessor proc) {
         add(panelMain);
@@ -65,6 +72,7 @@ public class mainTest extends JFrame{
         cbSex.addItem("Male");
         cbSex.addItem("Female");
         cbSex.addItem("Other");
+        lDep.setModel(modelAddList);
         processor=proc;
         btnAdd.addActionListener(new ActionListener() {
             @Override
@@ -72,14 +80,28 @@ public class mainTest extends JFrame{
                 //JOptionPane.showMessageDialog(panelMain, "Add Employee clicked");
                 taLog.append("Add Employee clicked\n");
                 String ssn = tfVEmpSSN.getText();
-
+                if (StringUtils.isNullOrEmpty(ssn)) {
+                    JOptionPane.showMessageDialog(panelMain, "Please provide new Employee's SSN.");
+                    return;
+                }
                     try {
-                        if (proc.EmployeeExists(ssn)) {
+                        if (  proc.EmployeeExists(ssn)) {
                             JOptionPane.showMessageDialog(panelMain, "Employee with SSN = " + ssn + " already exists.");
 
                         }
                         else
                         {
+                            ArrayList<Department> departments=proc.GetDepartments();
+                            cbDepartment.removeAllItems();
+                            for (Department dep: departments) {
+                                cbDepartment.addItem(dep.Name);
+
+
+                            }
+                            newEmployee=true;
+                            cbEdit.setEnabled(true);
+                            cbEdit.setSelected(true);
+
                             tfFirstName.setText("");
                             tfLastName.setText("");
                             tfMgrSSN.setText("");
@@ -89,7 +111,7 @@ public class mainTest extends JFrame{
                             tfAddress.setText("");
                             cbSex.setSelectedItem("Other");
                             tfSalary.setText("");
-                            tfDepartment.setText("");
+
 
                         }
                     } catch (Exception ex) {
@@ -107,6 +129,14 @@ public class mainTest extends JFrame{
                 try
                 {
                     Employee emp=proc.GetEmployee(ssn);
+                    if (emp.Ssn==0) {
+                        if (JOptionPane.showConfirmDialog(null, "Employee with SSN = " + ssn + " does not exist. Do you want to add new?") == 0) {
+                            btnAddEmployee.doClick();
+                        } else
+                            return;
+                    }
+                    newEmployee=false;
+                    cbEdit.setEnabled(true);
                     ArrayList<Department> departments=proc.GetDepartments();
                     cbDepartment.removeAllItems();
                     for (Department dep: departments) {
@@ -136,11 +166,33 @@ public class mainTest extends JFrame{
                             cbSex.setSelectedItem("Other");
                             break;
                     }
-
+                    tfMgrName.setText(emp.MgrName);
                     tfSalary.setText(Integer.toString(emp.Salary));
 
                     if (! Objects.isNull(emp.Dependents) && emp.Dependents.size()>0) {
-                    //todo - add dependent data to Dependents tab
+                        modelAddList.removeAllElements();
+                        taLog.append("View Dependent clicked\n");
+                        String essn=tfVEmpSSN.getText();
+                        try
+                        {
+
+                            for(int i = 0; i<emp.Dependents.size(); i++){
+                                modelAddList.addElement(emp.Dependents.get(i));
+                                //taLog.append("Dependents size = " + Dependents.size());
+                                //taLog.append("Dependent data for "+emp.Dependents.get(i)+" retrieved from database."+"\n");
+                            }
+                            tfDepName.setText("");
+                            tfDepSex.setText("");
+                            tfDepBday.setText("");
+                            tfDepRel.setText("");
+
+
+
+                        }
+                        catch (Exception ex)
+                        {
+                            taLog.append("Getting dependent data for ESSN="+essn+" failed: "+ex.getMessage()+"\n");
+                        }
                     }
 
 
@@ -167,18 +219,53 @@ public class mainTest extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("Save Dependent clicked\n");
+
+                String name = tfDepName.getText();
+                String sex = tfDepSex.getText();
+                String Bdate = tfDepBday.getText();
+                String relationship = tfDepRel.getText();
+                String essn = tfVEmpSSN.getText();
+                try {
+                    if (proc.dependentExists(essn,name))
+                    {
+                        proc.modifyDependent(essn,name,sex,Bdate,relationship);
+                    }
+                    else
+                    {
+                        Dependent dep = new Dependent(Integer.parseInt(essn),name,sex,Bdate,relationship);
+                        proc.addDependent(dep);
+                        modelAddList.addElement(dep);
+                    }
+
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                } catch (ClassNotFoundException classNotFoundException) {
+                    classNotFoundException.printStackTrace();
+                }
             }
         });
         newDependentButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("New Dependent clicked\n");
+                modelAddList.addElement("New Dependent");
+                cbDepEdit.setSelected(true);
+                newDependent=true;
+                tfDepName.setText("New Dependent");
             }
         });
         btnDepRemove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("Remove Dependent clicked\n");
+                String ssn = tfVEmpSSN.getText();
+                if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete Dependent "+ tfDepName.getText()+ "?") == 0) {
+                    try {
+                        proc.DeleteDependent(ssn, tfDepName.getText());
+                    } catch (Exception ex) {
+                        taLog.append("Failed to delete Dependent with SSN= " + ssn + ": " + ex.getMessage() + "\n");
+                    }
+                }
             }
         });
         btnRemoveEmployee.addActionListener(new ActionListener() {
@@ -196,15 +283,31 @@ public class mainTest extends JFrame{
 
             }
         });
+        lDep.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent me) {
+                if(lDep.getSelectedValue() instanceof Dependent)
+                {
+                    Dependent dep = (Dependent) lDep.getSelectedValue();
+                    String name = dep.Name;
+                    String Sex = dep.Sex;
+                    String Bdate = dep.Bdate;
+                    String Relationship = dep.Relationship;
+                    tfDepName.setText(name);
+                    tfDepSex.setText(Sex);
+                    tfDepBday.setText(Bdate);
+                    tfDepRel.setText(Relationship);
+                }
+            }
+        });
         btnSaveEmp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 taLog.append("Save Employee clicked\n");
-                int ssn=Integer.parseInt(tfSSN.getText());
+                int ssn=Integer.parseInt(tfVEmpSSN.getText());
                 try
                 {
 
-                    if (StringUtils.isNullOrEmpty(tfSSN.getText()))
+                    if (ssn==0)
                     {
                         JOptionPane.showMessageDialog(panelMain, "SSN field cannot be empty.");
                     }
@@ -218,17 +321,88 @@ public class mainTest extends JFrame{
                                 break;
                             }
                         }
+
                         Employee emp = new Employee(tfFirstName.getText(), tfMI.getText(), tfLastName.getText(),
                                 tfAddress.getText(), cbSex.getSelectedItem().toString(), tfBirthday.getText(), ssn,
-                                Integer.parseInt(tfSalary.getText()), Integer.parseInt(tfMgrSSN.getText()), dno);
-                        proc.updateEmployee(emp);
-                        taLog.append("Employee data for SSN = " + emp.Ssn +" was updated successfully in database." + "\n");
+                                Integer.parseInt(tfSalary.getText()), Integer.parseInt(tfMgrSSN.getText()), dno, tfMgrName.getText());
+                        if (newEmployee)
+                        {
+                            proc.addEmployee(emp);
+                            taLog.append("Employee data for SSN = " + emp.Ssn +" was added successfully to database." + "\n");
+                        }
+                         else {
+                            proc.updateEmployee(emp);
+                            taLog.append("Employee data for SSN = " + emp.Ssn + " was updated successfully in database." + "\n");
+                        }
+                        cbEdit.setSelected(false);
                     }
                 }
                 catch (Exception ex)
                 {
                     taLog.append(ex.getMessage()+"\n");
                 }
+            }
+        });
+        cbEdit.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == ItemEvent.SELECTED) {//checkbox has been selected
+                    tfSalary.setEditable(true);
+                    cbSex.setEditable(true);
+                    cbDepartment.setEditable(true);
+                    tfMgrSSN.setEditable(true);
+                    tfAddress.setEditable(true);
+                    if (newEmployee)
+                    {
+                        tfFirstName.setEditable(true);
+                        tfLastName.setEditable(true);
+                        tfMgrSSN.setEditable(true);
+                        tfMI.setEditable(true);
+                        //tfSSN.setText(ssn);
+                        tfBirthday.setEditable(true);
+                        tfAddress.setEditable(true);
+                        cbSex.setEditable(true);
+                        tfSalary.setEditable(true);
+                        cbDepartment.setEditable(true);
+                    }
+                    else
+                        proc.LockEmployee(Integer.parseInt(tfVEmpSSN.getText()));
+                } else {//checkbox has been deselected
+                    tfSalary.setEditable(false);
+                    cbSex.setEditable(false);
+                    cbDepartment.setEditable(false);
+                    tfMgrSSN.setEditable(false);
+                    tfAddress.setEditable(false);
+                    tfFirstName.setEditable(false);
+                    tfLastName.setEditable(false);
+                    tfMgrSSN.setEditable(false);
+                    tfMI.setEditable(false);
+                    //tfSSN.setText(ssn);
+                    tfBirthday.setEditable(false);
+                    tfAddress.setEditable(false);
+                    cbSex.setEditable(false);
+                    tfSalary.setEditable(false);
+                    cbDepartment.setEditable(false);
+                };
+            }
+        });
+        cbDepEdit.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == ItemEvent.SELECTED) {
+                    tfDepBday.setEditable(true);
+                    tfDepBday.setEditable(true);
+                    tfDepRel.setEditable(true);
+                    tfDepSex.setEditable(true);
+                }
+                else
+                {
+                    tfDepBday.setEditable(false);
+                    tfDepBday.setEditable(false);
+                    tfDepRel.setEditable(false);
+                    tfDepSex.setEditable(false);
+                }
+
             }
         });
     }

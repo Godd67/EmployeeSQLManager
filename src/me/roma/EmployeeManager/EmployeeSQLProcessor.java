@@ -1,5 +1,6 @@
 package me.roma.EmployeeManager;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import com.mysql.cj.util.StringUtils;
 
 import javax.sql.DataSource;
 import javax.swing.*;
@@ -64,8 +65,10 @@ public class EmployeeSQLProcessor {
                     +Integer.toString(emp.Salary) + ","
                     +Integer.toString(emp.Super_ssn) + ","
                     +Integer.toString(emp.Dno) + ")");
-
-        }catch(Exception e){ System.out.println(e); throw e; }
+            commit();
+        }catch(Exception e){ System.out.println(e);
+            rollback();
+            throw e; }
     }
     public void updateEmployee(Employee emp) throws SQLException, ClassNotFoundException {
         try{
@@ -85,8 +88,11 @@ public class EmployeeSQLProcessor {
                     ",Dno="+Integer.toString(emp.Dno) +
                     " where ssn="+emp.Ssn;
             int rs=stmt.executeUpdate(sql);
+            commit();
 
-        }catch(Exception e){ System.out.println(e); throw e; }
+        }catch(Exception e){ System.out.println(e);
+            rollback();
+            throw e; }
     }
     public boolean EmployeeExists(String ssn) throws SQLException, ClassNotFoundException {
         try{
@@ -118,9 +124,11 @@ public class EmployeeSQLProcessor {
             stmt.executeUpdate("delete from Employee where ssn="+ssn);
             stmt.executeUpdate("delete from Dependent where essn="+ssn);
 
+            commit();
 
-
-        }catch(Exception e){ System.out.println(e); throw e;}
+        }catch(Exception e){ System.out.println(e);
+            rollback();
+            throw e;}
     }
 
     public ArrayList<Department> GetDepartments() throws SQLException, ClassNotFoundException
@@ -160,6 +168,7 @@ public class EmployeeSQLProcessor {
             //here sonoo is database name, root is username and password
             Statement stmt=con.createStatement();
             ResultSet employees=stmt.executeQuery("select * from Employee where ssn="+ssn+" limit 1");
+
             if (employees.next()) {
                 emp.Fname=employees.getString("Fname");
                 emp.Minit=employees.getString("Minit");
@@ -170,8 +179,15 @@ public class EmployeeSQLProcessor {
                 emp.Sex=employees.getString("Sex");
                 emp.Salary=employees.getInt("Salary");
                 emp.Super_ssn=employees.getInt("Super_ssn");
+                if (emp.Super_ssn>0) {
+                    Statement mgrstmt=con.createStatement();
+                    ResultSet mgr = mgrstmt.executeQuery("select Fname, Minit, Lname from Employee where ssn=" + emp.Super_ssn + " limit 1");
+                    if (mgr.next())
+                        emp.MgrName=mgr.getString("Fname")+" "+mgr.getString("Minit")+" "+mgr.getString("Lname");
+                }
                 emp.Dno=employees.getInt("Dno");
-                ResultSet dep=stmt.executeQuery("select * from Department where Mgr_ssn="+Integer.toString(emp.Dno)+" limit 1");
+                Statement depstmt=con.createStatement();
+                ResultSet dep=depstmt.executeQuery("select * from Department where Mgr_ssn="+Integer.toString(emp.Dno)+" limit 1");
                 if (dep.next())
                 {
                     emp.Department=new Department();
@@ -207,6 +223,133 @@ public class EmployeeSQLProcessor {
         }catch(Exception e){ System.out.println(e); throw e;}
     }
 
+    public void addDependent(Dependent dep) throws SQLException, ClassNotFoundException {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            int rs=stmt.executeUpdate("insert Dependent (Essn, Dependent_name, Sex, Bdate, Relationship) values " +
+                    "('" + Integer.toString(dep.Essn) +"','"
+                    +dep.Name + "','"
+                    +dep.Sex + "','"
+                    +dep.Bdate + "','"
+                    +dep.Relationship + "'); ");
+            commit();
 
+        }catch(Exception e){ System.out.println(e);
+            rollback();
+            throw e; }
+    }
+
+    private void commit()
+    {
+        try {
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company", "root", "1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt = con.createStatement();
+            int rs = stmt.executeUpdate("commit;");
+
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex);
+        }
+    }
+    private void rollback()
+    {
+        try {
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company", "root", "1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt = con.createStatement();
+            int rs = stmt.executeUpdate("rollback;");
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex);
+        }
+    }
+
+    public boolean dependentExists(String essn, String name) throws SQLException, ClassNotFoundException
+    {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet dependent=stmt.executeQuery("select * from Dependent where Essn = "+essn+" and Dependent_name = '"+name+ "' limit 1;");
+            if (dependent.next()) {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+        }catch(Exception e){ System.out.println(e); throw e;}
+
+    }
+    public void modifyDependent(String essn, String name, String sex, String Bdate, String relationship) throws SQLException, ClassNotFoundException {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            int rs=stmt.executeUpdate("Update Dependent Set " +
+                    "Sex = '" + sex + "'," +
+                    "Bdate = '" + Bdate + "'," +
+                    "Relationship = '" + relationship + "' where Essn = " + essn+ "Dependent_name='"+name+"'; commit");
+            commit();
+        }catch(Exception e){ System.out.println(e);
+            rollback();
+            throw e; }
+    }
+
+    public void DeleteDependent(String ssn, String name)throws SQLException, ClassNotFoundException {
+
+            try{
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection con=DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/company","root","1234");
+                //here sonoo is database name, root is username and password
+                Statement stmt=con.createStatement();
+                stmt.executeUpdate("delete from Dependent where essn="+ssn+" and Dependent_name='"+name+"'; commit;");
+                commit();
+            }catch(Exception e){ System.out.println(e);
+                rollback();
+                throw e;}
+        }
+
+
+    public void LockEmployee(Integer ssn)  {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet emp=stmt.executeQuery("start transaction; select ssn from Employee where ssn = "+ssn+" limit 1 for share nowait");
+
+
+        }catch(Exception e){ System.out.println(e); }
+    }
+    public void LockDependent(Integer ssn, String name)  {
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/company","root","1234");
+            //here sonoo is database name, root is username and password
+            Statement stmt=con.createStatement();
+            ResultSet emp=stmt.executeQuery("start transaction; select ssn from employee where ssn="+ssn+" for update nowait; select dependent_name from Dependent where ssn = "+ssn+" and dependent_name='"+name+"' limit 1 for share nowait");
+
+
+        }catch(Exception e){ System.out.println(e); }
+    }
 
 }
